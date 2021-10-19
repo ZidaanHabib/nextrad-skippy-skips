@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     image: eclipse-mosquitto:1.6
     volumes:
-      - ./mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./mosquitto/config/:/mosquitto/config/
       - ./mosquitto/data:/mosquitto/data/
       - ./mosquitto/log:/mosquitto/log/
     ports:
