@@ -10,20 +10,25 @@ services:
       - ./mosquitto/log:/mosquitto/log/
     ports:
       - "1883:1883"
+      - "9001:9001"
     networks: 
-      - default
+      - default 
+    expose:
+      - "1883"
 
   command_app:
-      restart: unless-stopped
+      restart: "no"
       build: . 
       volumes:
         - .:/app 
-      ports:
-        - "9001:9001"
+      #ports:
+       # - "1884:1883" 
       networks:
         - default
       stdin_open: true
       tty : true
       command: python -u main.py
-      depends_on: 
-        - mosquitto_broker
+
+#networks:
+  #backend:
+    #name: custom_network
