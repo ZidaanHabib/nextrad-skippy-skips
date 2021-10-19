@@ -3,13 +3,27 @@ version: "3.8"
 services: 
   mosquitto_broker:
     restart: unless-stopped
-    image: eclipse-mosquitto:1.6
+    image: eclipse-mosquitto:2.0
     volumes:
       - ./mosquitto/config/:/mosquitto/config/
-      - ./mosquitto/data:/mosquitto/data/
+      #- ./mosquitto/data:/mosquitto/data/
       - ./mosquitto/log:/mosquitto/log/
     ports:
       - "1883:1883"
-      - "9001:9001"
     networks: 
       - default
+
+  command_app:
+      restart: unless-stopped
+      build: . 
+      volumes:
+        - .:/app 
+      ports:
+        - "9001:9001"
+      networks:
+        - default
+      stdin_open: true
+      tty : true
+      command: python -u main.py
+      depends_on: 
+        - mosquitto_broker
