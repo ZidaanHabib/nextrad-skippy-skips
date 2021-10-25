@@ -1,6 +1,7 @@
 from paho.mqtt import client as mqtt
 from configparser import ConfigParser
 from misc.ascii_art import STARTUP_MSG
+import sys
 
 
 """ MQTT client callbacks:"""
@@ -33,6 +34,7 @@ def setup():
     #client.on_log = on_log
     client.on_subscribe = on_subscribe
     client.on_message = on_message
+    client.loop_start()
 
     try:
         print("<< Establishing connection to MQTT broker... >> ")
@@ -44,25 +46,56 @@ def setup():
 
 def control_loop():
     exit = False
-    options = """ 1) Slew to GPS location \n 2) Adjust slew speed \n q) Quit. """
+    options = """ 1) Slew to GPS location \n 2) Slew to azimuth, elevation \n 3) Adjust slew speed \n q) Quit. """
     while not exit:
         print(options)
         cmd = input("Enter a command: \n")
 
-        if (cmd == 'q'):
+        if (cmd == "1"):
+            slew_to_location()
+        
+        elif (cmd == "2"):
+            slew_to_az_el()
+
+        elif (cmd == 'q'):
             exit = True
+            print("See ya!")
 
 def welcome():
     print(STARTUP_MSG)
+
+def slew_to_location():
+    target_lat = eval(input("Enter target latitude in degrees. Valid range[-90,90] (eg. -77.342 ) \n"))
+    target_long = eval(input("Enter target longitude in degrees (eg. -65.342 ) \n"))
+    # TODO send lat and long to client side
+
+def slew_to_az_el():
+    az_string = ""
+    el_string = ""
+    while not( az_string.isnumeric() ): 
+        try:
+            az_string = (input("Enter target azimuth in degrees [-180, 180] \n"))
+            target_az = float(az_string)
+        except:
+            print("Invalid number. ")
+    while not ( el_string.isnumeric()):
+        try:
+            el_string = (input("Enter target elevation in degrees [-180, 180] \n"))
+            target_el = float(el_string)
+        except:
+            print("Invalid number. ")
+        
+    print("<<< Slewing to {}, {} >>> \n".format(target_az, target_el))
+    # TODO send az and el to client side
 
 if __name__ == "__main__":
     global client
     welcome()
     try:
         setup()
-        client.loop_start()
+        
     except:
-        exit()
+        sys.exit(1)
 
     
     control_loop()
