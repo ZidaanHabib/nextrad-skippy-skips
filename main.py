@@ -11,7 +11,7 @@ def on_connect(client, userdata, flags, rc):
         print(" << Connection OK. >>")
     else:
         print("Connection failed with response code " + str(rc))
-    client.subscribe("test")
+    client.subscribe("Pi-1/Responses")
 
 
 def on_log(client, userdata, level, buf):
@@ -52,20 +52,31 @@ def control_loop():
         print(options)
         cmd = input("Enter a command: \n")
 
-        if (cmd == "1"):
-            slew_to_location()
-        
+        if cmd == "1":
+            calibrate()
         elif (cmd == "2"):
+            slew_to_location()
+        elif (cmd == "3"):
             slew_to_az_el()
-
         elif (cmd == 'q'):
             exit = True
             print("See ya!")
         elif (cmd == "4"):
             slew()
+        elif cmd == "5":
+            sweep()
+        elif cmd == "6":
+            stop()
+        elif cmd == "7":
+            set_slew_rate()
+        elif cmd == "8":
+            set_az_limits()
 
 def welcome():
     print(STARTUP_MSG)
+
+def calibrate():
+    client.publish("Pi-1", "CALIB")
 
 def slew_to_location():
     lat_string = ""
@@ -76,19 +87,19 @@ def slew_to_location():
         try:
             lat_string = (input("Enter target latitude in degrees [-90, 90] \n"))
             target_lat = float(lat_string)
-        except:
+        except ValueError as e:
             print("Invalid number. ")
     while not(long_string.isnumeric()): 
         try:
             long_string = (input("Enter target longitude in degrees [-180, 180] \n"))
             target_long = float(long_string)
-        except:
+        except ValueError as e:
             print("Invalid number. ")
     while not(alt_string.isnumeric()): 
         try:
             alt_string = (input("Enter altitude in meters\n"))
             target_alt = float(alt_string)
-        except:
+        except ValueError as e:
             print("Invalid number. ")
     print("<<< Slewing to Lat:{}, Long:{}, Alt:{} m >>> \n".format(target_lat, target_long, target_alt))
     client.publish("Pi-1", "GOTO-LOC/{}/{}/{}".format(target_lat, target_long, target_alt))
@@ -100,14 +111,14 @@ def slew_to_az_el():
         try:
             az_string = (input("Enter target azimuth in degrees [-180, 180] \n"))
             target_az = float(az_string)
-        except:
+        except ValueError as e:
             print("Invalid number. ")
     while not ( el_string.isnumeric()):
         try:
             el_string = (input("Enter target elevation in degrees [-180, 180] \n"))
             target_el = float(el_string)
-        except:
-            print("Invalid number. ")
+        except ValueError as e:
+            print("Invalid number.")
         
     print("<<< Slewing to {}, {} >>> \n".format(target_az, target_el))
     # TODO send az and el to client side
@@ -128,6 +139,51 @@ def slew():
     else:
         axis, dir = "EL", "NEG"
 
+def sweep():
+    client.publish("Pi-1", "SWEEP")
+
+def stop():
+    client.publish("Pi-1", "STOP")
+
+def set_slew_rate():
+    rate_str = ""
+    rate = 0
+    while not rate_str.isnumeric():
+        try:
+            rate_str = input("Enter slew rate:\n")
+        except ValueError as e:
+            print("Invalid number.")
+    client.publish("Pi-1", "SET-SR/{}".format(rate_str))
+
+def set_az_limits():
+    min = ""
+    while not min.isnumeric() or float(min) not in range(-180, 180):
+        try:
+            min = input("Enter min azimuth [-180, 180]:\n")
+        except ValueError as e:
+            print("Invalid number.")
+    max = ""
+    while not max.isnumeric() or float(max) not in range(-180, 180):
+        try:
+            max = input("Enter max azimuth in range [-180, 180]:\n")
+        except ValueError as e:
+            print("Invalid number.")
+    client.publish("Pi-1", "SET-AZ-LIM/{}/{}".format(min, max))
+
+def set_el_limits():
+    min = ""
+    while not min.isnumeric() or float(min) not in range(-180, 180):
+        try:
+            min = input("Enter min elevation [-180, 180]:\n")
+        except ValueError as e:
+            print("Invalid number.")
+    max = ""
+    while not max.isnumeric() or float(max) not in range(-180, 180):
+        try:
+            max = input("Enter max elevation in range [-180, 180]:\n")
+        except ValueError as e:
+            print("Invalid number.")
+    client.publish("Pi-1", "SET-EL-LIM/{}/{}".format(min, max))
 
 if __name__ == "__main__":
     global client
