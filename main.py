@@ -1,6 +1,7 @@
 from paho.mqtt import client as mqtt
 from configparser import ConfigParser
 from misc.ascii_art import STARTUP_MSG
+from misc.options import OPTIONS_MENU
 import sys
 
 
@@ -38,7 +39,7 @@ def setup():
 
     try:
         print("<< Establishing connection to MQTT broker... >> ")
-        client.connect(host="mosquitto_broker", port=1883)
+        client.connect(host="localhost", port=1883)
     except Exception as e:
         print(e)
         print("MQTT broker unreachable. Shutting down . . . ")
@@ -46,7 +47,7 @@ def setup():
 
 def control_loop():
     exit = False
-    options = """ 1) Slew to GPS location \n 2) Slew to azimuth, elevation \n 3) Adjust slew speed \n q) Quit. """
+    options = OPTIONS_MENU
     while not exit:
         print(options)
         cmd = input("Enter a command: \n")
@@ -60,14 +61,37 @@ def control_loop():
         elif (cmd == 'q'):
             exit = True
             print("See ya!")
+        elif (cmd == "4"):
+            slew()
 
 def welcome():
     print(STARTUP_MSG)
 
 def slew_to_location():
-    target_lat = eval(input("Enter target latitude in degrees. Valid range[-90,90] (eg. -77.342 ) \n"))
-    target_long = eval(input("Enter target longitude in degrees (eg. -65.342 ) \n"))
-    # TODO send lat and long to client side
+    lat_string = ""
+    long_string = ""
+    alt_string = ""
+
+    while not(lat_string.isnumeric()): 
+        try:
+            lat_string = (input("Enter target latitude in degrees [-90, 90] \n"))
+            target_lat = float(lat_string)
+        except:
+            print("Invalid number. ")
+    while not(long_string.isnumeric()): 
+        try:
+            long_string = (input("Enter target longitude in degrees [-180, 180] \n"))
+            target_long = float(long_string)
+        except:
+            print("Invalid number. ")
+    while not(alt_string.isnumeric()): 
+        try:
+            alt_string = (input("Enter altitude in meters\n"))
+            target_alt = float(alt_string)
+        except:
+            print("Invalid number. ")
+    print("<<< Slewing to Lat:{}, Long:{}, Alt:{} m >>> \n".format(target_lat, target_long, target_alt))
+    client.publish("Pi-1", "GOTO-LOC/{}/{}/{}".format(target_lat, target_long, target_alt))
 
 def slew_to_az_el():
     az_string = ""
@@ -87,6 +111,23 @@ def slew_to_az_el():
         
     print("<<< Slewing to {}, {} >>> \n".format(target_az, target_el))
     # TODO send az and el to client side
+    client.publish("Pi-1", "GOTO-AZEL/{}/{}".format(target_az, target_el))
+
+def slew():
+    valid = ["l", "r", "u", "d"]
+    cmd = ""
+    while cmd not in valid:
+        cmd = input("Direction (l,r,d,u):\n")
+    axis, dir = "", ""
+    if cmd == "l":
+        axis, dir = "AZ", "POS"
+    elif cmd == "r":
+        axis, dir = "AZ", "NEG"
+    elif cmd == "u":
+        axis, dir = "EL","POS"
+    else:
+        axis, dir = "EL", "NEG"
+
 
 if __name__ == "__main__":
     global client
