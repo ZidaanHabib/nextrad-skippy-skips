@@ -16,19 +16,3 @@ services:
     expose:
       - "1883"
 
-  command_app:
-      restart: "no"
-      build: . 
-      volumes:
-        - .:/app 
-      #ports:
-       # - "1884:1883" 
-      networks:
-        - default
-      stdin_open: true
-      tty : true
-      command: python -u main.py
-
-#networks:
-  #backend:
-    #name: custom_network
