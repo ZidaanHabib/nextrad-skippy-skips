@@ -83,19 +83,19 @@ def slew_to_location():
     long_string = ""
     alt_string = ""
 
-    while not(lat_string.isnumeric()): 
+    while not(lat_string.strip("-").isnumeric()):
         try:
             lat_string = (input("Enter target latitude in degrees [-90, 90] \n"))
             target_lat = float(lat_string)
         except ValueError as e:
             print("Invalid number. ")
-    while not(long_string.isnumeric()): 
+    while not(long_string.strip("-").isnumeric()):
         try:
             long_string = (input("Enter target longitude in degrees [-180, 180] \n"))
             target_long = float(long_string)
         except ValueError as e:
             print("Invalid number. ")
-    while not(alt_string.isnumeric()): 
+    while not(alt_string.strip("-").isnumeric()):
         try:
             alt_string = (input("Enter altitude in meters\n"))
             target_alt = float(alt_string)
@@ -107,13 +107,13 @@ def slew_to_location():
 def slew_to_az_el():
     az_string = ""
     el_string = ""
-    while not( az_string.isnumeric() ): 
+    while not( az_string.strip("-").isnumeric() ):
         try:
             az_string = (input("Enter target azimuth in degrees [-180, 180] \n"))
             target_az = float(az_string)
         except ValueError as e:
             print("Invalid number. ")
-    while not ( el_string.isnumeric()):
+    while not ( el_string.strip("-").isnumeric()):
         try:
             el_string = (input("Enter target elevation in degrees [-180, 180] \n"))
             target_el = float(el_string)
@@ -148,7 +148,7 @@ def stop():
 def set_slew_rate():
     rate_str = ""
     rate = 0
-    while not rate_str.isnumeric():
+    while not rate_str.strip("-").isnumeric():
         try:
             rate_str = input("Enter slew rate:\n")
         except ValueError as e:
@@ -157,13 +157,13 @@ def set_slew_rate():
 
 def set_az_limits():
     min = ""
-    while not min.isnumeric() or float(min) not in range(-180, 180):
+    while not min.strip("-").isnumeric() or float(min) not in range(-180, 180):
         try:
             min = input("Enter min azimuth [-180, 180]:\n")
         except ValueError as e:
             print("Invalid number.")
     max = ""
-    while not max.isnumeric() or float(max) not in range(-180, 180):
+    while not max.strip("-").isnumeric() or float(max) not in range(-180, 180):
         try:
             max = input("Enter max azimuth in range [-180, 180]:\n")
         except ValueError as e:
@@ -172,13 +172,13 @@ def set_az_limits():
 
 def set_el_limits():
     min = ""
-    while not min.isnumeric() or float(min) not in range(-180, 180):
+    while not min.strip("-").isnumeric() or float(min) not in range(-180, 180):
         try:
             min = input("Enter min elevation [-180, 180]:\n")
         except ValueError as e:
             print("Invalid number.")
     max = ""
-    while not max.isnumeric() or float(max) not in range(-180, 180):
+    while not max.strip("-").isnumeric() or float(max) not in range(-180, 180):
         try:
             max = input("Enter max elevation in range [-180, 180]:\n")
         except ValueError as e:
