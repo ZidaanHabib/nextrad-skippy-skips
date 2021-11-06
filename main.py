@@ -1,3 +1,5 @@
+import time
+
 from paho.mqtt import client as mqtt
 from configparser import ConfigParser
 from misc.ascii_art import STARTUP_MSG
@@ -30,13 +32,16 @@ def on_message(client, userdata, msg_enc) -> str:
 
 def setup():
     global client
+    cf = ConfigParser()
+    cf.read("config.ini")
+
     client = mqtt.Client("Command-server", protocol=mqtt.MQTTv31)
     client.on_connect = on_connect
     #client.on_log = on_log
     client.on_subscribe = on_subscribe
     client.on_message = on_message
     client.loop_start()
-
+    broker = cf["MQTT"]["broker"]
     try:
         print("<< Establishing connection to MQTT broker... >> ")
         client.connect(host="localhost", port=1883)
@@ -72,11 +77,14 @@ def control_loop():
         elif cmd == "8":
             set_az_limits()
 
+
 def welcome():
     print(STARTUP_MSG)
 
+
 def calibrate():
     client.publish("Pi-1", "CALIB")
+
 
 def slew_to_location():
     lat_string = ""
@@ -104,6 +112,7 @@ def slew_to_location():
     print("<<< Slewing to Lat:{}, Long:{}, Alt:{} m >>> \n".format(target_lat, target_long, target_alt))
     client.publish("Pi-1", "GOTO-LOC/{}/{}/{}".format(target_lat, target_long, target_alt))
 
+
 def slew_to_az_el():
     az_string = ""
     el_string = ""
@@ -121,7 +130,6 @@ def slew_to_az_el():
             print("Invalid number.")
         
     print("<<< Slewing to {}, {} >>> \n".format(target_az, target_el))
-    # TODO send az and el to client side
     client.publish("Pi-1", "GOTO-AZEL/{}/{}".format(target_az, target_el))
 
 def slew():
@@ -142,8 +150,10 @@ def slew():
 def sweep():
     client.publish("Pi-1", "SWEEP")
 
+
 def stop():
     client.publish("Pi-1", "STOP")
+
 
 def set_slew_rate():
     rate_str = ""
@@ -170,6 +180,7 @@ def set_az_limits():
             print("Invalid number.")
     client.publish("Pi-1", "SET-AZ-LIM/{}/{}".format(min, max))
 
+
 def set_el_limits():
     min = ""
     while not min.strip("-").isnumeric() or float(min) not in range(-180, 180):
@@ -185,14 +196,10 @@ def set_el_limits():
             print("Invalid number.")
     client.publish("Pi-1", "SET-EL-LIM/{}/{}".format(min, max))
 
+
 if __name__ == "__main__":
     global client
     welcome()
-    try:
-        setup()
-        
-    except:
-        sys.exit(1)
-
-    
+    setup()
+    time.sleep(3)
     control_loop()
