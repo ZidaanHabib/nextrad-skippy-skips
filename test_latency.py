@@ -46,14 +46,3 @@ if __name__ == "__main__":
         time_str = str(time_rec)
         client.publish("Pi-1", "TIMING-TEST/{}".format(time_str))
         time.sleep(0.2)
-    """try:
-        while True:
-            pass
-    except KeyboardInterrupt:
-        print("Exiting")"""
-    """time_rec = time.time()
-    time_str = str(time_rec)
-    print("Sending timestamp...")
-    client.publish("Pi-1", "TIMING-TEST/{}".format(time_str))
-    print("Sent")
-    time.sleep(0.1)"""
